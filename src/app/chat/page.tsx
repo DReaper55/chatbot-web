@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { useScrollToBottom } from "../components/general/use-scroll-to-bottom";
 import { Header } from "../components/chat/header";
 import { message } from "../interfaces/message";
-import { Overview } from "../components/chat/overview";
 import { PreviewMessage, ThinkingMessage } from "../components/chat/message";
 import { ChatInput } from "../components/chat/chatinput";
 
@@ -76,7 +75,6 @@ export default function Chat() {
     <div className="flex flex-col min-w-0 h-dvh bg-background">
       <Header/>
       <div className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4" ref={messagesContainerRef}>
-        {messages.length == 0 && <Overview />}
         {messages.map((message, index) => (
           <PreviewMessage key={index} message={message} />
         ))}
