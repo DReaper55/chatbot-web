@@ -1,10 +1,10 @@
 import { Textarea } from "../general/textarea";
 import { cx } from 'classix';
 import { Button } from "../general/button";
-import { ArrowUpIcon } from "./icons"
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { ArrowUpIcon } from "lucide-react";
 
 interface ChatInputProps {
     question: string;

@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
 import { cx } from 'classix';
-import { SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { message } from '@/app/interfaces/message';
 import { useEffect, useState } from "react";
+import { SparklesIcon } from 'lucide-react';
 
 export const PreviewMessage = ({ message }: { message: message; }) => {
   const [mounted, setMounted] = useState(false);
