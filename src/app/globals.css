@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
+
+/* Smooth Theme Transition */
+* {
+  transition: background-color 0.4s ease, color 0.1s ease, border-color 0.4s ease;
+}
+
+/* Default Light Theme */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card: #f5f5f5;
+  --border: #e0e0e0;
+  --primary: #1a1a1a;
+  --secondary: #4a4a4a;
+  --accent: #3b82f6; /* Blue */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark Theme */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card: #1a1a1a;
+  --border: #333;
+  --primary: #f5f5f5;
+  --secondary: #b3b3b3;
+  --accent: #60a5fa; /* Lighter Blue */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Apply Theme Variables */
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans, Arial, Helvetica, sans-serif);
+}
+
+/* Utility Classes */
+.card {
+  background-color: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Button Styles */
+.button {
+  background-color: var(--accent);
+  color: var(--background);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: background 0.3s;
+}
+
+.button:hover {
+  background-color: rgba(59, 130, 246, 0.8); /* Darken on hover */
 }

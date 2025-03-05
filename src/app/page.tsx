@@ -2,6 +2,7 @@
 
 export default function Home() {
   return (
-    <h1>Hello Homepage</h1>
+    <div className="ml-[30%] bg-blue">Hello Homepage</div>
   )
 }
+
