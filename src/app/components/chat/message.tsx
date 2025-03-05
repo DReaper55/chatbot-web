@@ -26,7 +26,7 @@ export const PreviewMessage = ({ message }: { message: message; }) => {
           'group-data-[role=user]/message:bg-zinc-700 dark:group-data-[role=user]/message:bg-muted group-data-[role=user]/message:text-white flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl'
         )}
       >
-        {message.sender === 'assistant' && (
+        {message.sender === 'bot' && (
           <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
             <SparklesIcon size={14} />
           </div>

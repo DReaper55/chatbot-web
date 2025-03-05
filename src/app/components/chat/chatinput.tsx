@@ -15,14 +15,14 @@ interface ChatInputProps {
 
 const suggestedActions = [
     {
-        title: 'How is the weather',
-        label: 'in Vienna?',
-        action: 'How is the weather in Vienna today?',
+        title: 'I\'m looking for',
+        label: 'a shirt',
+        action: 'I\'m looking for a shirt',
     },
     {
-        title: 'Tell me a fun fact',
-        label: 'about pandas',
-        action: 'Tell me an interesting fact about pandas',
+        title: 'I\'m craving',
+        label: 'burgers',
+        action: 'I\'m craving burgers',
     },
 ];
 

@@ -15,6 +15,7 @@
   --primary: #1a1a1a;
   --secondary: #4a4a4a;
   --accent: #3b82f6; /* Blue */
+  --dialog-bg: #ffffff;
 }
 
 /* Dark Theme */
@@ -26,6 +27,7 @@
   --primary: #f5f5f5;
   --secondary: #b3b3b3;
   --accent: #60a5fa; /* Lighter Blue */
+  --dialog-bg: #0a0a0a;
 }
 
 /* Apply Theme Variables */
