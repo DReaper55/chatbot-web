@@ -4,7 +4,7 @@ import { SignJWT, jwtVerify } from 'jose'
 import { SessionPayload } from '@/app/lib/definitions'
 import { redirect } from 'next/navigation'
  
-const secretKey = process.env.SESSION_SECRET
+const secretKey = process.env.NEXT_PUBLIC_SESSION_SECRET
 const encodedKey = new TextEncoder().encode(secretKey)
  
  

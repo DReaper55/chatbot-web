@@ -1,4 +1,4 @@
-const API_URL = process.env.PYTHON_BACKEND_URL || "http://localhost:8000";
+const API_URL = process.env.API_URL || "http://localhost:8000";
 
 export const usersDB = {
   async getUserByUsername(username: string) {
@@ -8,7 +8,7 @@ export const usersDB = {
   },
 
   async createUser(username: string, password: string) {
-    const res = await fetch(`${API_URL}/users/signup`, {
+    const res = await fetch(`${API_URL}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -23,14 +23,23 @@ export const usersDB = {
   },
 
   async validateUser(username: string, password: string) {
-    const res = await fetch(`${API_URL}/users/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-
-    if (!res.ok) throw new Error("Invalid credentials");
-
-    return res.json();
-  },
+    try {  
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+        credentials: "include",
+      });
+  
+      if (!res.ok) {
+        const errorText = await res.text(); // Log API response
+        throw new Error(`Invalid credentials: ${errorText}`);
+      }
+  
+      return res.json();
+    } catch (error) {
+      console.error("Fetch error:", error);
+      throw new Error("Failed to connect to the authentication server.");
+    }
+  }  
 };

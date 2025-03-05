@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,21 +20,16 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+    const result = await signIn("credentials", {
+      username: formData.username,
+      password: formData.password,
+      redirect: true, // Prevents NextAuth from redirecting automatically
+    });
 
-      if (res.ok) {
-        router.push("/");
-      } else {
-        const { message } = await res.json();
-        setError(message || "Login failed");
-      }
-    } catch (err) {
-      setError("Something went wrong");
+    if (result?.error) {
+      setError("Invalid username or password");
+    } else {
+      router.push("/chat"); // Redirect to chat page on success
     }
   };
 

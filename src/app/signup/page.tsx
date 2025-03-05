@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -26,11 +27,22 @@ export default function SignupPage() {
         body: JSON.stringify(formData),
       });
 
-      if (res.ok) {
-        router.push("/login");
-      } else {
+      if (!res.ok) {
         const { message } = await res.json();
-        setError(message || "Signup failed");
+        throw new Error(message || "Signup failed");
+      }
+
+      // Auto-login after signup
+      const loginResult = await signIn("credentials", {
+        username: formData.username,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (loginResult?.error) {
+        setError("Signup successful, but login failed.");
+      } else {
+        router.push("/chat");
       }
     } catch (err) {
       setError("Something went wrong");
