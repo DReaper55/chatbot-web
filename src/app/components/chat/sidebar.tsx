@@ -7,7 +7,12 @@ import { motion } from "framer-motion";
 import { ThemeToggle } from "../general/theme-toggle";
 import { useSession } from "next-auth/react";
 import AccountDialog from "./AccountDialog";
-import ProductOrderCommand from "./ProductOrderList";
+import { v4 as uuidv4 } from "uuid";
+
+import { RootState } from "@/app/store/redux/reduxStore";
+import { addChat, Chat, deleteChat, setActiveChat } from "@/app/store/redux/chatSlice";
+import { useDispatch, useSelector } from "react-redux";
+
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,11 +20,10 @@ interface SidebarProps {
   onDeleteChat?: (chatId: string) => void;
 }
 
-export function Sidebar({ isOpen, onClose, onDeleteChat }: SidebarProps) {
-  const [chats, setChats] = useState<
-    { id: string; name: string; active: boolean }[]
-  >([]);
-  const [activeChat, setActiveChat] = useState<string | null>(null);
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const dispatch = useDispatch();
+  const chats = useSelector((state: RootState) => state.chats.chats);
+  const activeChatId = useSelector((state: RootState) => state.chats.activeChatId);
 
   const [openAccount, setOpenAccount] = useState(false);
 
@@ -27,32 +31,21 @@ export function Sidebar({ isOpen, onClose, onDeleteChat }: SidebarProps) {
 
   const createNewChat = () => {
     const newChat = {
-      id: Date.now().toString(),
-      name: `Chat ${chats.length + 1}`,
-      active: false,
-    };
-    setChats([...chats, newChat]);
+      chatId: uuidv4(),
+      userId: session?.user?.email || "guest",
+      title: `Chat ${chats.length + 1}`,
+      dateTime: new Date().toISOString()
+    } as Chat;
+    dispatch(addChat(newChat));
   };
 
   const selectChat = (chatId: string) => {
-    setActiveChat(chatId);
-    setChats(
-      chats.map((chat) => ({
-        ...chat,
-        active: chat.id === chatId,
-      }))
-    );
+    dispatch(setActiveChat(chatId));
   };
 
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
-    if (onDeleteChat) {
-      onDeleteChat(chatId);
-      setChats(chats.filter((chat) => chat.id !== chatId));
-      if (activeChat === chatId) {
-        setActiveChat(null);
-      }
-    }
+    dispatch(deleteChat(chatId));
   };
 
   return (
@@ -79,21 +72,21 @@ export function Sidebar({ isOpen, onClose, onDeleteChat }: SidebarProps) {
 
         <ScrollArea className="flex-1">
           <div className="space-y-2">
-            {chats.map((chat) => (
-              <div key={chat.id} className="group relative">
+            {chats.map((chat: Chat) => (
+              <div key={chat.chatId} className="group relative">
                 <Button
-                  variant={chat.active ? "secondary" : "ghost"}
+                  variant={chat.chatId === activeChatId ? "outline" : "ghost"}
                   className="w-full justify-start gap-2 pr-8"
-                  onClick={() => selectChat(chat.id)}
+                  onClick={() => selectChat(chat.chatId)}
                 >
                   <MessageCircle className="h-4 w-4" />
-                  {chat.name}
+                  {chat.title}
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => handleDeleteChat(e, chat.id)}
+                  onClick={(e) => handleDeleteChat(e, chat.chatId)}
                 >
                   <Trash2 className="h-4 w-4 text-primary" />
                 </Button>

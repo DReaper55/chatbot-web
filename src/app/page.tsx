@@ -1,5 +1,7 @@
 "use client";
 
+import { useDispatch, useSelector } from "react-redux";
+
 import { getSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useScrollToBottom } from "./components/general/use-scroll-to-bottom";
@@ -10,6 +12,8 @@ import { v4 as uuidv4 } from "uuid";
 import { Sidebar } from "./components/chat/sidebar";
 import { SidebarClose } from "lucide-react";
 import { motion } from "framer-motion";
+import { RootState } from "./store/redux/reduxStore";
+import { addMessage, setActiveChat } from "./store/redux/chatSlice";
 
 const chatInitialState: message[] = [
   {
@@ -22,6 +26,11 @@ export default function Chat() {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
+  const dispatch = useDispatch();
+  const activeChatId = useSelector((state: RootState) => state.chats.activeChatId);
+  const chats = useSelector((state: RootState) => state.chats.chats);
+  const activeChat = chats.find((c) => c.chatId === activeChatId);
+
   const [messages, setMessages] = useState(chatInitialState);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
@@ -29,45 +38,55 @@ export default function Chat() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  const CHAT_SERVER = process.env.NEXT_PUBLIC_CHAT_SERVER_URL || "ws://localhost:3000/api/chat";
+
   useEffect(() => {
-    const CHAT_SERVER =
-      process.env.NEXT_PUBLIC_CHAT_SERVER_URL || "ws://localhost:3000/api/chat";
-
-    let ws: WebSocket;
-
-    async function connectToServer() {
+    const connectToServer = async () => {
       const session = await getSession();
-
       if (!session?.user?.email) {
         console.error("User session not found.");
         return;
       }
 
       const userId = session.user.email;
+      if (!activeChatId) {
+        // If no active chat, create a new one
+        const newChatId = uuidv4();
+        dispatch(setActiveChat(newChatId));
+        return;
+      }
 
-      const traceId = uuidv4();
+      if (socket) {
+        socket.close();
+      }
 
-      ws = new WebSocket(`${CHAT_SERVER}/${traceId}`); // Connect to Next.js WebSocket proxy
-
-      ws.onopen = () => console.log("Connected to WebSocket proxy");
+      const ws = new WebSocket(`${CHAT_SERVER}/${userId}/${activeChatId}`);
+      ws.onopen = () => console.log("Connected to chat:", activeChatId);
       ws.onmessage = (event) => {
-        setMessages((prev) => [...prev, { sender: "bot", text: event.data }]);
+        const newMessage = { sender: "bot", text: event.data };
+        dispatch(addMessage({ chatId: activeChatId, message: newMessage }));
         setTyping(false);
       };
       ws.onerror = (error) => console.error("WebSocket Error:", error);
-      ws.onclose = () => console.log("Disconnected from WebSocket proxy");
+      ws.onclose = () => console.log("Disconnected from chat:", activeChatId);
 
       setSocket(ws);
-    }
+    };
 
     connectToServer();
 
     return () => {
-      if (ws) {
-        ws.close();
+      if (socket) {
+        socket.close();
       }
     };
-  }, [getSession, setMessages, setTyping, setSocket]);
+  }, [activeChatId]);
+
+  useEffect(() => {
+    setMessages(activeChat?.messages || []);
+    setTyping(false);
+  }, [activeChat]);
+
 
   const sendMessage = (question?: string) => {
     if (!socket || socket.readyState !== WebSocket.OPEN || typing) return;
@@ -84,13 +103,10 @@ export default function Chat() {
     setIsSidebarOpen(!isSidebarOpen)
   }
 
-  const onDeleteChat = (chatId: string) => {
-    console.log("Deleted chat: "+chatId)
-  }
-
   return (
     <div className="flex flex-col min-w-0 h-dvh bg-background">
-      <Sidebar isOpen={isSidebarOpen} onClose={toggleSidebar} onDeleteChat={onDeleteChat} />
+      <Sidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
+      
       {/* Sidebar Button */}
       <motion.button
         onClick={toggleSidebar}
