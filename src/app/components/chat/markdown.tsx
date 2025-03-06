@@ -1,8 +1,55 @@
 import { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Button } from "../general/button";
+
+// Product Card Component
+const ProductCard = ({ product }: { product: any }) => {
+  return (
+    <div className="border border-gray-300 dark:border-gray-600 p-4 rounded-lg shadow-md w-[80dvw] md:max-w-[30vw] bg-[var(--dialog-bg)]">
+      <div className="flex flex-row justify-between items-center">
+      <h3 className="text-xl font-semibold">{product.brand}</h3>
+      <Button variant="outline" onClick={() => {}}>View</Button>
+      </div>
+      <p className="text-gray-600 dark:text-gray-400">Price: {product.price}</p>
+      <p className="text-gray-600 dark:text-gray-400">Stock: {product.available}</p>
+      <p className="text-gray-600 dark:text-gray-400">Sizes: {product.size.join(", ")}</p>
+    </div>
+  );
+};
+
+const parseProductData = (data: string) => {
+  try {
+    // Extract the JSON part after "load_product:"
+    const jsonString = data.replace(/^load_product:/, '').trim();
+
+    // Replace single quotes with double quotes to form a valid JSON string
+    const fixedJsonString = jsonString
+      .replace(/'/g, '"') // Replace all single quotes with double quotes
+      .replace(/"\s*,\s*"/g, '", "') // Ensure proper spacing
+
+    return JSON.parse(fixedJsonString); // Parse into an object
+  } catch (error) {
+    console.error("Error parsing product data:", error);
+    return null;
+  }
+};
+
 
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
+  if (children.startsWith("load_product:")) {
+    try {
+      const productData = parseProductData(children);
+      console.log(productData);
+
+      // Display the special ProductCard component
+      return <ProductCard product={productData} />;
+    } catch (error) {
+      console.error("Error parsing product data:", error);
+      return <p className="text-red-500">I got an error in loading the product</p>;
+    }
+  }
+  
   const components = {
     code: ({ node, inline, className, children, ...props }: any) => {
       const match = /language-(\w+)/.exec(className || "");

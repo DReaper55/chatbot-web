@@ -60,7 +60,7 @@ export default function Chat() {
       setSocket(ws);
     }
 
-    // connectToServer();
+    connectToServer();
 
     return () => {
       if (ws) {
