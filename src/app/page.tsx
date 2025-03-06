@@ -8,7 +8,7 @@ import { PreviewMessage, ThinkingMessage } from "./components/chat/message";
 import { ChatInput } from "./components/chat/chatinput";
 import { v4 as uuidv4 } from "uuid";
 import { Sidebar } from "./components/chat/sidebar";
-import { SidebarClose, SidebarOpen } from "lucide-react";
+import { SidebarClose } from "lucide-react";
 import { motion } from "framer-motion";
 
 const chatInitialState: message[] = [

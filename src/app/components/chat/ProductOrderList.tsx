@@ -2,13 +2,15 @@ import * as React from "react";
 import { CommandInput, CommandList, CommandGroup, CommandItem, CommandShortcut, CommandSeparator, CommandEmpty, Command } from "@/app/components/general/command";
 import { Trash2, PlusCircle, Package, ShoppingBag } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { Product } from "@/app/interfaces/product";
+import { useRouter } from "next/navigation";
 
 
 // Mock data for products and orders
-const products = [
-  { id: 1, name: "Wireless Mouse" },
-  { id: 2, name: "Mechanical Keyboard" },
-  { id: 3, name: "Noise Cancelling Headphones" },
+const products: Product[] = [
+  { product_id: "1", price: 2000, name: "Wireless Mouse" },
+  { product_id: "2", price: 3000, name: "Mechanical Keyboard" },
+  { product_id: "3", price: 4000, name: "Noise Cancelling Headphones" },
 ];
 
 const orders = [
@@ -18,13 +20,46 @@ const orders = [
 ];
 
 export default function ProductOrderCommand() {
-  const [productList, setProductList] = React.useState(products);
+  const [productList, setProductList] = React.useState<Product[]>([]);
   const [orderList, setOrderList] = React.useState(orders);
+
+  const router = useRouter();
+  
+  React.useEffect(()=>{
+    getProducts()
+
+    return;
+  })
+
+  const getProducts = async () => {
+    if(productList.length > 0) return;
+
+    try {
+        const res = await fetch("/api/products");
+  
+        if (res.status === 401) {
+          // If session expired, redirect to login
+          alert("Your session has expired. Please log in again.");
+          router.push("/login"); // Redirect to login page
+          return;
+        }
+
+        if (!res.ok) throw new Error("Failed to fetch products");
+        const data = await res.json();
+  
+        setProductList(data as Product[]);
+
+        console.log(res)
+      } catch (err) {
+        console.error("Error:", err);
+        // setError("Something went wrong");
+      }
+  }
 
   // Function to add a product to the orders list
   const addProduct = (product: any) => {
     setOrderList((prevOrders) => [...prevOrders, { ...product, id: uuidv4(), name: product }]);
-    setProductList((prevProducts) => prevProducts.filter((p) => p.id !== product.id));
+    setProductList((prevProducts) => prevProducts.filter((p) => p.product_id !== product.id));
   };
 
   // Function to remove an order from the list
@@ -57,7 +92,7 @@ export default function ProductOrderCommand() {
         {/* Products Section */}
         <CommandGroup heading="Products">
           {productList.map((product) => (
-            <CommandItem key={product.id} onSelect={addProduct} className="text-green-500 cursor-pointer">
+            <CommandItem key={product.product_id} onSelect={addProduct} className="text-green-500 cursor-pointer">
               <Package className="w-4 h-4 text-blue-400" />
               {product.name}
               <CommandShortcut><PlusCircle className="h-4 w-4" /></CommandShortcut>
