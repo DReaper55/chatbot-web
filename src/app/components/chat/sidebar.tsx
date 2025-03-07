@@ -1,51 +1,132 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/app/components/general/button";
-import { PlusCircle, MessageCircle, X, Trash2, CircleUserRound } from "lucide-react";
+import {
+  PlusCircle,
+  MessageCircle,
+  Trash2,
+  CircleUserRound,
+} from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { ScrollArea } from "@/app/components/general/scroll-area";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "../general/theme-toggle";
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import AccountDialog from "./AccountDialog";
 import { v4 as uuidv4 } from "uuid";
 
 import { RootState } from "@/app/store/redux/reduxStore";
-import { addChat, Chat, deleteChat, setActiveChat } from "@/app/store/redux/chatSlice";
+import {
+  addChat,
+  Chat,
+  deleteChat,
+  Message,
+  setActiveChat,
+  setChats,
+} from "@/app/store/redux/chatSlice";
 import { useDispatch, useSelector } from "react-redux";
-
+import { useRouter } from "next/navigation";
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  onDeleteChat?: (chatId: string) => void;
+  createNewChat: () => void;
 }
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, createNewChat }: SidebarProps) {
   const dispatch = useDispatch();
   const chats = useSelector((state: RootState) => state.chats.chats);
-  const activeChatId = useSelector((state: RootState) => state.chats.activeChatId);
+  const activeChatId = useSelector(
+    (state: RootState) => state.chats.activeChatId
+  );
 
   const [openAccount, setOpenAccount] = useState(false);
 
-  const {data: session} = useSession()
+  const { data: session } = useSession();
 
-  const createNewChat = () => {
-    const newChat = {
-      chatId: uuidv4(),
-      userId: session?.user?.email || "guest",
-      title: `Chat ${chats.length + 1}`,
-      dateTime: new Date().toISOString()
-    } as Chat;
-    dispatch(addChat(newChat));
+  const router = useRouter();
+
+  React.useEffect(() => {
+    getChats();
+
+    return;
+  });
+
+  const getChats = async () => {
+    if (chats.length > 0) return;
+
+    try {
+      const mSession = await getSession();
+      if (!mSession?.user?.email) {
+        // If session expired, redirect to login
+        alert("Your session has expired. Please log in again.");
+        router.push("/login"); // Redirect to login page
+        return;
+      }
+
+      const userId = mSession.user.email;
+
+      const res = await fetch(`/api/session/${userId}`);
+
+      if (!res.ok) throw new Error("Failed to fetch chats");
+      const data = await res.json();
+
+      const mChats = [] as Chat[];
+
+      (data as []).forEach(e => {
+        const conversation = e['conversation'] || [];
+
+        mChats.push({
+          chatId: e['chat_id'],
+          dateTime: e['date'],
+          messages: (conversation as []).map((m: string) => {
+            return {
+              sender: m.split(':')[0].toLowerCase(),
+              text: m.split(':')[1].toLowerCase(),
+            } as Message
+          }),
+          title: (conversation[0] as string).split(":")[1],
+          userId: e['user_id'],
+        } as Chat)
+      });
+
+      dispatch(setChats(mChats));
+    } catch (err) {
+      console.error("Error:", err);
+    }
   };
 
-  const selectChat = (chatId: string) => {
-    dispatch(setActiveChat(chatId));
+  const selectChat = (chat_id: string) => {
+    dispatch(setActiveChat(chat_id));
   };
 
-  const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
+  const handleDeleteChat = async (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
-    dispatch(deleteChat(chatId));
+
+    try{
+      const mSession = await getSession();
+      if (!mSession?.user?.email) {
+        // If session expired, redirect to login
+        alert("Your session has expired. Please log in again.");
+        router.push("/login"); // Redirect to login page
+        return;
+      }
+
+      const userId = mSession.user.email;
+
+      const res = await fetch(`/api/session/${userId}/${chatId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch chats");
+
+      dispatch(deleteChat(chatId));
+
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   return (
@@ -60,7 +141,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     >
       <div className="flex flex-col h-full p-4">
         <h2 className="text-lg font-semibold mt-[30%] mb-[10%]">Chats</h2>
-        
+
         <Button
           onClick={createNewChat}
           className="mb-4 flex items-center gap-2"
@@ -96,22 +177,25 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </ScrollArea>
 
         <div className="flex flex-row w-full items-center space-x-4 justify-between">
-        <Button
-        onClick={() => setOpenAccount(true)}
-          className="flex flex-row items-center gap-2 w-full"
-          variant="outline"
-        >
-          <CircleUserRound className="h-4 w-4" />
-          {session?.user?.name || "Account"}
-        </Button>
+          <Button
+            onClick={() => setOpenAccount(true)}
+            className="flex flex-row items-center gap-2 w-full"
+            variant="outline"
+          >
+            <CircleUserRound className="h-4 w-4" />
+            {session?.user?.name || "Account"}
+          </Button>
 
-        <ThemeToggle />
+          <ThemeToggle />
         </div>
       </div>
 
       {/* Account Button */}
-      <AccountDialog isOpen={openAccount} setOpen={setOpenAccount} session={session} />
-
+      <AccountDialog
+        isOpen={openAccount}
+        setOpen={setOpenAccount}
+        session={session}
+      />
     </motion.aside>
   );
 }

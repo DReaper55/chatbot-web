@@ -26,7 +26,7 @@ const parseProductData = (data: string) => {
     // Replace single quotes with double quotes to form a valid JSON string
     const fixedJsonString = jsonString
       .replace(/'/g, '"') // Replace all single quotes with double quotes
-      .replace(/"\s*,\s*"/g, '", "') // Ensure proper spacing
+      .replace(/"(\w+)"\s*:/g, '"$1":') // Ensure property names are properly quoted
 
     return JSON.parse(fixedJsonString); // Parse into an object
   } catch (error) {
@@ -37,7 +37,7 @@ const parseProductData = (data: string) => {
 
 
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
-  if (children.startsWith("load_product:")) {
+  if (children.includes("load_product:")) {
     try {
       const productData = parseProductData(children);
       console.log(productData);

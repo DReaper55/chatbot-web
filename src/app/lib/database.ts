@@ -80,6 +80,64 @@ export const productDB = {
 
 
 // .................................
+// Session Database
+// .................................
+export const sessionDB = {
+  async getUserSessions(user_id: string, token?: string | null) {
+    const res = await fetch(`${API_URL}/session/${user_id}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Get one session");
+    return res.json();
+  },
+
+  async getSession(user_id: string, session_id: string, token?: string | null) {
+    const res = await fetch(`${API_URL}/session/${user_id}/${session_id}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Get all user sessions");
+    }
+
+    return res.json();
+  },
+
+  async createSession(session: any, token?: string | null) {
+    const res = await fetch(`${API_URL}/session`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify(session),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Get all user sessions");
+    }
+
+    return res.json();
+  },
+
+  async deleteSession(user_id: string, session_id: string, token?: string | null) {
+    const res = await fetch(`${API_URL}/session/${user_id}/${session_id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Failed to removed all user sessions");
+    }
+
+    return res.json();
+  },
+};
+
+
+// .................................
 // Order Database
 // .................................
 export const orderDB = {

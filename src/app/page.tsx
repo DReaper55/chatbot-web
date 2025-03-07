@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { getSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useScrollToBottom } from "./components/general/use-scroll-to-bottom";
-import { message } from "./interfaces/message";
 import { PreviewMessage, ThinkingMessage } from "./components/chat/message";
 import { ChatInput } from "./components/chat/chatinput";
 import { v4 as uuidv4 } from "uuid";
@@ -13,16 +12,16 @@ import { Sidebar } from "./components/chat/sidebar";
 import { SidebarClose } from "lucide-react";
 import { motion } from "framer-motion";
 import { RootState } from "./store/redux/reduxStore";
-import { addMessage, setActiveChat } from "./store/redux/chatSlice";
+import { addChat, addMessage, Chat, Message, setActiveChat } from "./store/redux/chatSlice";
 
-const chatInitialState: message[] = [
+const chatInitialState: Message[] = [
   {
     sender: "bot",
     text: "Hey! How may I help you today?",
   },
 ];
 
-export default function Chat() {
+export default function ChatPage() {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
@@ -64,6 +63,7 @@ export default function Chat() {
       ws.onopen = () => console.log("Connected to chat:", activeChatId);
       ws.onmessage = (event) => {
         const newMessage = { sender: "bot", text: event.data };
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
         dispatch(addMessage({ chatId: activeChatId, message: newMessage }));
         setTyping(false);
       };
@@ -87,15 +87,61 @@ export default function Chat() {
     setTyping(false);
   }, [activeChat]);
 
+  const createNewChat = async () => {
+    const session = await getSession();
+      if (!session?.user?.email) {
+        console.error("User session not found.");
+        return;
+      }
 
-  const sendMessage = (question?: string) => {
+    const newChat = {
+      chatId: activeChatId,
+      userId: session?.user?.email || "guest",
+      title: `Chat ${chats.length + 1}`,
+      dateTime: new Date().toISOString(),
+    } as Chat;
+
+    try{
+      const user_id = newChat.userId;
+      const chat_id = newChat.chatId;
+
+      const res = await fetch(`/api/session/${user_id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({user_id, chat_id}),
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch chats");
+
+      dispatch(addChat(newChat));
+
+      return newChat.chatId;
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const sendMessage = async (question?: string) => {
     if (!socket || socket.readyState !== WebSocket.OPEN || typing) return;
+
+    let chatId = activeChatId || undefined;
+
+    if(!chatId) {
+      chatId = await createNewChat();
+    };
 
     if (!question) question = input;
 
-    setMessages([...messages, { sender: "user", text: question }]);
+    const newMessage = { sender: "user", text: question };
+
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
     setTyping(true);
     socket.send(question);
+
+    dispatch(addMessage({ chatId: chatId, message: newMessage }));
+
     setInput("");
   };
 
@@ -105,7 +151,7 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col min-w-0 h-dvh bg-background">
-      <Sidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
+      <Sidebar isOpen={isSidebarOpen} onClose={toggleSidebar} createNewChat={createNewChat} />
       
       {/* Sidebar Button */}
       <motion.button

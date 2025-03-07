@@ -29,7 +29,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError("Invalid username or password");
     } else {
-      router.push("/chat"); // Redirect to chat page on success
+      router.push("/"); // Redirect to chat page on success
     }
   };
 

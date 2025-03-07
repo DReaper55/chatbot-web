@@ -2,7 +2,7 @@
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface Message {
+export interface Message {
   sender: string;
   text: string;
 }
@@ -44,7 +44,7 @@ const chatSlice = createSlice({
           state.activeChatId = null;
         }
       },
-    addMessage: (state, action: PayloadAction<{ chatId: string; message: Message }>) => {
+    addMessage: (state, action: PayloadAction<{ chatId?: string; message: Message }>) => {
       const chat = state.chats.find((c) => c.chatId === action.payload.chatId);
       if (chat) {
         chat.messages.push(action.payload.message);

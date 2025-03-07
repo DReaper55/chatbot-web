@@ -25,13 +25,13 @@ export const authOptions = {
 
         const data = await res.json();
 
-        const userData = await decrypt(data.access_token)
-        
+        const userData = await decrypt(data.access_token);
+
         const user = {
-            id: userData?.id as string,
-            name: userData?.sub, // You can fetch full name from DB
-            image: data.access_token as string, // Store JWT token
-        } as User
+          id: userData?.id as string,
+          name: userData?.sub, // You can fetch full name from DB
+          image: data.access_token as string, // Store JWT token
+        } as User;
 
         return user; // Must return an object with `id`, `name`, or `email`
       },
@@ -45,22 +45,33 @@ export const authOptions = {
     strategy: "jwt" as SessionStrategy,
   },
   callbacks: {
-    async session({ session, token }: { session: Session, token: JWT }) {
-        session.user = {
-            email: token.id as string,
-            name: token.name,
-            image: token.token as string
-        }
-        return session;
-      },
-      async jwt({ token, user }: { token: JWT, user?: User }) {
-        if (user) {
-            token.id = user.id;
-            token.name = user.name;
-            token.token = user.image; // Store JWT token in session
-          }
-        return token;
-      },
+    async session({ session, token }: { session: Session; token: JWT }) {
+      // Extract expiration time
+      const res = await decrypt((token.token as string | undefined));
+
+      // Check if token is expired
+      if (!res) {
+        console.log("Token expired, returning null session");
+        session.user = undefined;
+        return session; // Session expired, return undefined
+      }
+
+      session.user = {
+        email: token.id as string,
+        name: token.name,
+        image: token.token as string,
+      };
+
+      return session;
+    },
+    async jwt({ token, user }: { token: JWT; user?: User }) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.token = user.image; // Store JWT token in session
+      }
+      return token;
+    },
   },
 };
 
