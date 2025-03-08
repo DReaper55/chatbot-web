@@ -5,6 +5,8 @@ import { Button } from "../general/button";
 
 // Product Card Component
 const ProductCard = ({ product }: { product: any }) => {
+  // <p className="text-gray-600 dark:text-gray-400">Sizes: {product.size.join(", ")}</p>
+
   return (
     <div className="border border-gray-300 dark:border-gray-600 p-4 rounded-lg shadow-md w-[80dvw] md:max-w-[30vw] bg-[var(--dialog-bg)]">
       <div className="flex flex-row justify-between items-center">
@@ -13,7 +15,6 @@ const ProductCard = ({ product }: { product: any }) => {
       </div>
       <p className="text-gray-600 dark:text-gray-400">Price: {product.price}</p>
       <p className="text-gray-600 dark:text-gray-400">Stock: {product.available}</p>
-      <p className="text-gray-600 dark:text-gray-400">Sizes: {product.size.join(", ")}</p>
     </div>
   );
 };
@@ -21,14 +22,21 @@ const ProductCard = ({ product }: { product: any }) => {
 const parseProductData = (data: string) => {
   try {
     // Extract the JSON part after "load_product:"
-    const jsonString = data.replace(/^load_product:/, '').trim();
+    // const jsonString = data.replace(/^load_product:/, '').trim();
 
+    // todo: fix this json parsing
     // Replace single quotes with double quotes to form a valid JSON string
-    const fixedJsonString = jsonString
-      .replace(/'/g, '"') // Replace all single quotes with double quotes
-      .replace(/"(\w+)"\s*:/g, '"$1":') // Ensure property names are properly quoted
+    // const fixedJsonString = jsonString
+    //   .replace(/'/g, '"') // Replace all single quotes with double quotes
+    //   .replace(/"\s*,\s*"/g, '", "')
+    //   .replace(/"(\w+)"\s*:/g, '"$1":') // Ensure property names are properly quoted
 
-    return JSON.parse(fixedJsonString); // Parse into an object
+    const formJson = JSON.parse(data); // Parse into an object
+    const mData = formJson.data;
+
+    console.log(mData);
+
+    return mData;
   } catch (error) {
     console.error("Error parsing product data:", error);
     return null;
@@ -37,7 +45,9 @@ const parseProductData = (data: string) => {
 
 
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
-  if (children.includes("load_product:")) {
+  console.log(children)
+
+  if (children.includes("load_product")) {
     try {
       const productData = parseProductData(children);
       console.log(productData);

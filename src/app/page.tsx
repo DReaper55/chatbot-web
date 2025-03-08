@@ -87,7 +87,7 @@ export default function ChatPage() {
     setTyping(false);
   }, [activeChat]);
 
-  const createNewChat = async () => {
+  const createNewChat = async (message?: string) => {
     const session = await getSession();
       if (!session?.user?.email) {
         console.error("User session not found.");
@@ -97,8 +97,9 @@ export default function ChatPage() {
     const newChat = {
       chatId: activeChatId,
       userId: session?.user?.email || "guest",
-      title: `Chat ${chats.length + 1}`,
+      title: message || `Chat ${chats.length + 1}`,
       dateTime: new Date().toISOString(),
+      messages: []
     } as Chat;
 
     try{
@@ -115,6 +116,7 @@ export default function ChatPage() {
 
       if (!res.ok) throw new Error("Failed to fetch chats");
 
+      console.log("Create new chat");
       dispatch(addChat(newChat));
 
       return newChat.chatId;
@@ -128,8 +130,8 @@ export default function ChatPage() {
 
     let chatId = activeChatId || undefined;
 
-    if(!chatId) {
-      chatId = await createNewChat();
+    if(!chatId || messages.length === 0) {
+      chatId = await createNewChat(question);
     };
 
     if (!question) question = input;

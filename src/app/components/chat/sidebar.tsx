@@ -29,7 +29,7 @@ import { useRouter } from "next/navigation";
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  createNewChat: () => void;
+  createNewChat: () => Promise<string | undefined>;
 }
 
 export function Sidebar({ isOpen, onClose, createNewChat }: SidebarProps) {
@@ -84,7 +84,7 @@ export function Sidebar({ isOpen, onClose, createNewChat }: SidebarProps) {
               text: m.split(':')[1].toLowerCase(),
             } as Message
           }),
-          title: (conversation[0] as string).split(":")[1],
+          title: (conversation as []).length > 0 && (conversation[0] as string).includes(":") ? (conversation[0] as string).split(":")[1] : conversation[0],
           userId: e['user_id'],
         } as Chat)
       });
@@ -154,7 +154,7 @@ export function Sidebar({ isOpen, onClose, createNewChat }: SidebarProps) {
         <ScrollArea className="flex-1">
           <div className="space-y-2">
             {chats.map((chat: Chat) => (
-              <div key={chat.chatId} className="group relative">
+              <div key={chat.chatId} className="group relative w-[90%]">
                 <Button
                   variant={chat.chatId === activeChatId ? "outline" : "ghost"}
                   className="w-full justify-start gap-2 pr-8"
