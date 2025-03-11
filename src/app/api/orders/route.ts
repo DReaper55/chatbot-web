@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { orderDB } from "@/app/lib/database";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import authOptions from "../auth/[...nextauth]/authOptions";
 
 export async function POST(req: Request) {
   const { order } = await req.json();
