@@ -3,19 +3,12 @@ import { sessionDB } from "@/app/lib/database";
 import { getServerSession } from "next-auth";
 import authOptions from "../../../auth/[...nextauth]/authOptions";
 
-interface Params {
-  params: {
-    user_id: string;
-    chat_id: string;
-  };
-}
-
 export async function GET(
   req: NextRequest,
-  context: Params
+  { params }: { params: Promise<{ user_id: string, chat_id: string }> }
 ) {
   try {
-    const { user_id, chat_id } = context.params; // Extract user and session ID from URL
+    const { user_id, chat_id } = await params; // Extract user and session ID from URL
 
     if (!user_id) {
       return NextResponse.json({ message: "User ID is required" }, { status: 400 });
