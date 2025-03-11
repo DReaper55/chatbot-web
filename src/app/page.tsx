@@ -37,50 +37,53 @@ export default function ChatPage() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const CHAT_SERVER = process.env.NEXT_PUBLIC_CHAT_SERVER_URL || "ws://localhost:3000/api/chat";
+  // ..............................
+  // Connect to a Websocket server
+  // ..............................
+  // const CHAT_SERVER = process.env.NEXT_PUBLIC_CHAT_SERVER_URL || "ws://localhost:3000/api/chat";
+  // 
+  // useEffect(() => {
+  //   const connectToServer = async () => {
+  //     const session = await getSession();
+  //     if (!session?.user?.email) {
+  //       console.error("User session not found.");
+  //       return;
+  //     }
 
-  useEffect(() => {
-    const connectToServer = async () => {
-      const session = await getSession();
-      if (!session?.user?.email) {
-        console.error("User session not found.");
-        return;
-      }
+  //     const userId = session.user.email;
+  //     if (!activeChatId) {
+  //       // If no active chat, create a new one
+  //       const newChatId = uuidv4();
+  //       dispatch(setActiveChat(newChatId));
+  //       return;
+  //     }
 
-      const userId = session.user.email;
-      if (!activeChatId) {
-        // If no active chat, create a new one
-        const newChatId = uuidv4();
-        dispatch(setActiveChat(newChatId));
-        return;
-      }
+  //     if (socket) {
+  //       socket.close();
+  //     }
 
-      if (socket) {
-        socket.close();
-      }
+  //     const ws = new WebSocket(`${CHAT_SERVER}/${userId}/${activeChatId}`);
+  //     ws.onopen = () => console.log("Connected to chat:", activeChatId);
+  //     ws.onmessage = (event) => {
+  //       const newMessage = { sender: "bot", text: event.data };
+  //       setMessages((prevMessages) => [...prevMessages, newMessage]);
+  //       dispatch(addMessage({ chatId: activeChatId, message: newMessage }));
+  //       setTyping(false);
+  //     };
+  //     ws.onerror = (error) => console.error("WebSocket Error:", error);
+  //     ws.onclose = () => console.log("Disconnected from chat:", activeChatId);
 
-      const ws = new WebSocket(`${CHAT_SERVER}/${userId}/${activeChatId}`);
-      ws.onopen = () => console.log("Connected to chat:", activeChatId);
-      ws.onmessage = (event) => {
-        const newMessage = { sender: "bot", text: event.data };
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
-        dispatch(addMessage({ chatId: activeChatId, message: newMessage }));
-        setTyping(false);
-      };
-      ws.onerror = (error) => console.error("WebSocket Error:", error);
-      ws.onclose = () => console.log("Disconnected from chat:", activeChatId);
+  //     setSocket(ws);
+  //   };
 
-      setSocket(ws);
-    };
+  //   connectToServer();
 
-    connectToServer();
-
-    return () => {
-      if (socket) {
-        socket.close();
-      }
-    };
-  }, [activeChatId]);
+  //   return () => {
+  //     if (socket) {
+  //       socket.close();
+  //     }
+  //   };
+  // }, [activeChatId]);
 
   useEffect(() => {
     setMessages(activeChat?.messages || []);
