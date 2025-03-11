@@ -3,12 +3,18 @@ import { productDB } from "@/app/lib/database";
 import { getServerSession } from "next-auth";
 import authOptions from "../../auth/[...nextauth]/authOptions";
 
+interface Params {
+  params: {
+    product_id: string;
+  };
+}
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { product_id: string } }
+  context: Params
 ) {
   try {
-    const { product_id } = params; // Extract product ID from URL
+    const { product_id } = context.params; // Extract product ID from URL
 
     if (!product_id) {
       return NextResponse.json({ message: "Product ID is required" }, { status: 400 });

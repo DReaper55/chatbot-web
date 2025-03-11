@@ -1,11 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { sessionDB } from "@/app/lib/database";
 import { getServerSession } from "next-auth";
 import authOptions from "../../auth/[...nextauth]/authOptions";
 
+interface Params {
+  params: {
+    user_id: string;
+  };
+}
+
 export async function GET(
-  req: Request,
-  { params }: { params: { user_id: string } }
+  req: NextRequest,
+  context: Params
 ) {
   try {
     // Fetch session on the server
@@ -15,9 +21,9 @@ export async function GET(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = params.user_id;
+    const userId = context.params.user_id;
 
-    if (!params || !userId) {
+    if (!context.params || !userId) {
       return NextResponse.json({ message: "User ID is required" }, { status: 400 });
     }
 
