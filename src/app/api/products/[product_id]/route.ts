@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { productDB } from "@/app/lib/database";
 import { getServerSession } from "next-auth";
 import authOptions from "../../auth/[...nextauth]/authOptions";
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { product_id: string } }
 ) {
   try {
