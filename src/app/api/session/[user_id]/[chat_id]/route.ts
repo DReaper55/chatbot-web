@@ -40,10 +40,10 @@ export async function GET(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { user_id: string, chat_id: string } }
+  { params }: { params: Promise<{ user_id: string, chat_id: string }> }
 ) {
   try {
-    const { user_id, chat_id } = params; // Extract user and session ID from URL
+    const { user_id, chat_id } = await params; // Extract user and session ID from URL
 
     if (!user_id) {
       return NextResponse.json({ message: "User ID is required" }, { status: 400 });
