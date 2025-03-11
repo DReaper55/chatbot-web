@@ -1,9 +1,11 @@
-import { useRouter } from "next/router";
+"use client";
+
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function ProductPage() {
   const router = useRouter();
-  const { id } = router.query;
+  // const { id } = router.query;
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
