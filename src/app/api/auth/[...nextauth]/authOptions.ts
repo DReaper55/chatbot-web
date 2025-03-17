@@ -3,6 +3,8 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { decrypt } from '@/app/lib/session';
 import { Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -46,14 +48,6 @@ const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async session({ session, token }: { session: Session; token: JWT }) {
-      const res = await decrypt(token.token as string | undefined);
-
-      if (!res) {
-        console.log("Token expired, returning null session");
-        session.user = undefined;
-        return session;
-      }
-
       session.user = {
         email: token.id as string,
         name: token.name,
@@ -69,6 +63,19 @@ const authOptions: NextAuthOptions = {
         token.token = user.image;
       }
       return token;
+    },
+  },
+  events: {
+    async signIn({ user }) {
+      // Store the JWT in an HTTP-only cookie
+      if (user?.image) {
+        (await cookies()).set("token", user.image, {
+          path: "/",
+          httpOnly: true,
+          // secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+        });
+      }  
     },
   },
 };

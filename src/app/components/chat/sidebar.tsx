@@ -178,12 +178,19 @@ export function Sidebar({ isOpen, onClose, createNewChat }: SidebarProps) {
 
         <div className="flex flex-row w-full items-center space-x-4 justify-between">
           <Button
-            onClick={() => setOpenAccount(true)}
+            onClick={() => {
+              if(!session || !session.user) {
+                router.push('/login')
+                return;
+              }
+
+              setOpenAccount(true);
+            }}
             className="flex flex-row items-center gap-2 w-full"
             variant="outline"
           >
             <CircleUserRound className="h-4 w-4" />
-            {session?.user?.name || "Account"}
+            {session?.user?.name || "Login"}
           </Button>
 
           <ThemeToggle />

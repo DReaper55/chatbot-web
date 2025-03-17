@@ -138,6 +138,27 @@ export const sessionDB = {
 
 
 // .................................
+// Chat Database
+// .................................
+export const chatDB = {
+  async sendChat(body: any, token?: string | null) {
+    const res = await fetch(`${API_URL}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Error sending message");
+    }
+
+    return res.json();
+  },
+};
+
+
+// .................................
 // Order Database
 // .................................
 export const orderDB = {
