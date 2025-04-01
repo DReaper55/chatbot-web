@@ -59,6 +59,10 @@ export default function LoginPage() {
         <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">
           Login
         </button>
+
+        <button onClick={() => router.push("/signup")} className="w-full mt-[10%] cursor-pointer">
+          Sign up
+        </button>
       </form>
     </div>
   );
